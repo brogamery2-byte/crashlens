@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CrashLens</title>
+<style>
+:root{--bg:#0d1014;--pn:#141920;--bd:#262d38;--tx:#e8ebf0;--mu:#8f99a8;--red:#f26b68;--amb:#e8ae45;--grn:#52c78d;--blu:#6aaaf5;--hl:#33290f;--ac:#6aaaf5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f7f9;--pn:#fff;--bd:#d6dbe3;--tx:#171b22;--mu:#566070;--red:#c8312e;--amb:#8a5a00;--grn:#157a4a;--blu:#1b5fc4;--hl:#fff2cc;--ac:#1b5fc4}}
+:root[data-theme="light"]{--bg:#f6f7f9;--pn:#fff;--bd:#d6dbe3;--tx:#171b22;--mu:#566070;--red:#c8312e;--amb:#8a5a00;--grn:#157a4a;--blu:#1b5fc4;--hl:#fff2cc;--ac:#1b5fc4}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+.mono,pre,textarea,code,.lb,.gut{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:6px;padding:6px 10px}
+.logo{font-weight:650;letter-spacing:-.01em;white-space:nowrap;display:flex;align-items:center;gap:6px;margin-right:6px}
+nav{display:flex;gap:2px;overflow-x:auto;flex:1}
+nav button{background:none;border:0;color:var(--mu);padding:0 12px;min-height:40px;border-radius:6px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button[aria-current=page]{color:var(--tx);background:var(--pn);box-shadow:inset 0 -2px var(--ac)}
+main{max-width:980px;margin:0 auto;padding:12px 12px 40px}
+.pn{background:var(--pn);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;margin:12px 0}
+h1{font-size:1.35rem;margin:.2rem 0 .5rem;overflow-wrap:anywhere}h2{font-size:1rem;margin:0 0 8px}p{margin:.4rem 0}
+.mu{color:var(--mu);font-size:.9rem}
+.btn,select,.in{background:var(--pn);color:var(--tx);border:1px solid var(--bd);border-radius:6px;min-height:40px;padding:0 12px;font:inherit;cursor:pointer}
+.btn.pri{background:var(--ac);color:#0b0e12;border-color:var(--ac);font-weight:600}
+.btn:focus-visible,select:focus-visible,.in:focus-visible,nav button:focus-visible,textarea:focus-visible,summary:focus-visible,.lb:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.in{cursor:text;width:100%}.in.sm{width:90px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.bar .sp{flex:1}
+.ed{display:flex;height:44vh;min-height:250px;border:1px solid var(--bd);border-radius:6px;background:var(--pn);overflow:hidden}
+.ed.drop{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.gut{padding:10px 8px 24px;text-align:right;color:var(--mu);overflow:hidden;user-select:none;white-space:pre;min-width:46px;font-size:var(--fs,16px);line-height:1.5;border-right:1px solid var(--bd)}
+textarea{flex:1;border:0;background:transparent;color:var(--tx);padding:10px;resize:none;white-space:pre;overflow:auto;outline:none;font-size:var(--fs,16px);line-height:1.5;min-width:0}
+#msg:empty{display:none}
+.msg{border:1px solid var(--bd);border-left:4px solid var(--blu);border-radius:6px;padding:10px 14px;margin:12px 0;background:var(--pn)}
+.msg.warn{border-left-color:var(--amb)}.msg.err{border-left-color:var(--red)}.msg b{display:block}
+.meter{height:6px;background:var(--bd);border-radius:3px;margin:6px 0;max-width:320px}.meter i{display:block;height:100%;background:var(--grn);border-radius:3px}
+ul.chk{list-style:none;padding:0;margin:6px 0}ul.chk li{font-size:.9rem}li.ok{color:var(--grn)}li.no{color:var(--mu)}
+.fix{border-top:1px solid var(--bd);padding:10px 0}.fix:first-of-type{border-top:0}
+.tag{display:inline-block;font-size:.8rem;border:1px solid var(--bd);border-radius:4px;padding:0 6px;margin-right:6px;color:var(--mu)}
+.cmd{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:6px 8px;margin-top:6px}.cmd code{flex:1;overflow-x:auto;white-space:pre}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0}dt{color:var(--mu)}dd{margin:0;overflow-wrap:anywhere}
+.ev1{border-left:3px solid var(--amb);background:var(--hl);padding:6px 10px;margin:6px 0;border-radius:0 6px 6px 0}.ev1 pre{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.lb{max-height:52vh;overflow:auto;border:1px solid var(--bd);border-radius:6px;background:var(--bg);font-size:13px;line-height:1.5}
+.row{display:flex}.ln{min-width:52px;text-align:right;padding:0 10px;color:var(--mu);user-select:none;flex:none;cursor:pointer;position:sticky;left:0;background:var(--bg)}
+.tx{white-space:pre;padding-right:12px}.lb.wr .tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.row.ev{background:var(--hl);box-shadow:inset 3px 0 var(--amb)}.row.hit{outline:2px solid var(--ac);outline-offset:-2px}
+.frame{display:block;overflow-wrap:anywhere;font-size:.88rem}
+details{margin:8px 0}summary{cursor:pointer;min-height:32px}
+.hrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.hrow .grow{flex:1;min-width:200px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s}#toast.on{opacity:1}
+label.chkl{display:flex;gap:10px;align-items:flex-start;min-height:40px;padding:4px 0}label.chkl input{margin-top:5px;width:18px;height:18px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:520px){dl{grid-template-columns:1fr}dd{margin-bottom:6px}.logo span{display:none}}
+</style></head>
+<body>
+<header><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M8 10.5h5"/></svg><span>CrashLens</span></div>
+<nav aria-label="Main"><button data-v="analyze">Analyze</button><button data-v="history">History</button><button data-v="formats">Supported formats</button><button data-v="settings">Settings</button><button data-v="about">About</button></nav></header>
+<main id="main"></main><div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){if(k==='class')e.className=a[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),a[k]);else e.setAttribute(k,a[k])}for(const x of c.flat())if(x!=null&&x!==false)e.append(x.nodeType?x:document.createTextNode(String(x)));return e};
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1400)};
+const copy=t=>{try{navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>toast('Copy blocked by browser'))}catch{toast('Copy blocked by browser')}};
+
+/* ---------- Settings (persisted locally) ---------- */
+const S=Object.assign({theme:'system',hist:true,full:false,fs:16,wrap:false,ln:true},store.get('cl:settings',{}));
+const saveS=()=>{store.set('cl:settings',S);applyTheme()};
+function applyTheme(){const r=document.documentElement;S.theme==='system'?r.removeAttribute('data-theme'):r.dataset.theme=S.theme;r.style.setProperty('--fs',S.fs+'px')}
+
+/* ---------- Analysis engine ----------
+ Pipeline: normalize -> extract exceptions -> parse stack frames -> classify -> detect environment
+ -> match patterns -> evidence lines -> confidence. Fully deterministic; no network. Logs are only ever
+ treated as text and rendered with textContent. A future AIAnalyzer would implement the same analyze() contract. */
+const ERRL=/^(?:Caused by: |Exception in thread "[^"]*" )?((?:[\w$]+\.)*[A-Z][\w$]*(?:Exception|Error))(?::\s?(.*))?$/;
+const F=(t,d,r,w,c)=>({t,d,r,w,c});
+const P=[
+{id:'mc-lwjgl',n:'LWJGL library failed to load',lang:'Java',app:'Minecraft',re:/lwjgl/i,need:/NoClassDefFoundError|ClassNotFoundException|UnsatisfiedLinkError|Failed to locate library/,dep:1,
+s:"Minecraft tried to use an LWJGL (graphics/windowing) class or native library that wasn't available at runtime.",
+y:"The launcher, loader or a mod expects a different LWJGL version than the one on the classpath, or the LWJGL natives weren't extracted.",
+f:[F('Check the LWJGL version','Medium','Low','Compare the LWJGL version your Minecraft version ships with against the one your launcher or a mod provides.'),F('Verify the Java runtime','Easy','Low','Use the Java version your Minecraft version requires.','java -version'),F('Regenerate the instance','Easy','Medium','Recreate the instance so libraries and natives are downloaded again. Back up your saves first.')],a:["Don't drop LWJGL jars from random sources into the mods folder."]},
+{id:'mc-mixin',n:'Mixin failed to apply',lang:'Java',app:'Minecraft',re:/Mixin apply failed|MixinApplyError|InvalidInjectionException|MixinTransformerError|Critical injection failure|InjectionError/,dep:1,
+s:"A Mixin (a bytecode patch that a mod applies to game code) failed to apply.",
+y:"The mod was probably built for a different Minecraft version, or two mods patch the same method.",
+f:[F('Identify the mod named in the log','Easy','Low','Look for a mixin config name such as modid.mixins.json, or a mod package in the stack trace.'),F('Update or remove the suspect mod','Easy','Low','Use the build made for your exact Minecraft version, and update your loader and Fabric API / Forge.'),F('Bisect your mods','Medium','Low','Remove half of the mods, test, and repeat until the crash stops.')],a:["Don't assume the named mod is the only culprit; the conflict may involve two mods."]},
+{id:'mc-deps',n:'Missing or incompatible mod dependency',lang:'Java',app:'Minecraft',re:/Mod resolution failed|Incompatible mods found|Unmet dependency|mandatory dependencies|requires (?:any )?version|depends on/i,dep:1,
+s:"The mod loader refused to start because a mod needs a dependency that is missing or the wrong version.",
+y:"A required library mod (for example Fabric API) is absent, or its version doesn't match what a mod asks for.",
+f:[F('Install the missing dependency','Easy','Low','Read the line that says what is required and add that mod for your Minecraft version.'),F('Match versions','Easy','Low','Make sure loader, dependencies and mods all target the same Minecraft version.')],a:[]},
+{id:'java-ver',n:'Java version too old',lang:'Java',re:/UnsupportedClassVersionError|class file version \d+|compiled by a more recent version of the Java Runtime/,
+s:"A class was compiled for a newer Java version than the one running it.",y:"The runtime is older than the one the software was built for.",
+f:[F('Check the active Java version','Easy','Low','Confirm which Java is actually used.','java -version'),F('Install a matching JDK','Easy','Low','Minecraft 1.20.5 and newer needs Java 21; 1.18 to 1.20.4 needs Java 17. Point your launcher at it.')],a:[]},
+{id:'java-ncdfe',n:'NoClassDefFoundError',lang:'Java',re:/NoClassDefFoundError/,dep:1,
+s:"The JVM tried to load a class that was available when the code was compiled but not at runtime.",y:"A dependency is missing from the classpath, has a different version, or failed to initialize earlier.",
+f:[F('Check the dependency and its version','Medium','Low','Find which library holds the class named in the log and confirm it is on the runtime classpath.'),F('Look for an earlier failure','Easy','Low','A static initializer that failed once makes later loads fail with this error.')],a:["Don't only add the jar to the compile classpath; the runtime classpath is what matters."],
+u:'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/NoClassDefFoundError.html'},
+{id:'java-cnfe',n:'ClassNotFoundException',lang:'Java',re:/ClassNotFoundException/,dep:1,s:"The JVM looked up a class by name and couldn't find it.",y:"The library that contains the class isn't on the classpath, or the name is misspelled.",
+f:[F('Verify the dependency is present','Medium','Low','Search your build output or dependency list for the class named in the log.')],a:[]},
+{id:'java-npe',n:'NullPointerException',lang:'Java',re:/NullPointerException/,s:"Code used a reference that was null.",y:"A value was never set, or a lookup returned nothing. Newer Java versions name the null variable in the message.",
+f:[F('Open the top frame in your own code','Easy','Low','That line dereferenced the null value; check what feeds it.'),F('Read the helpful message','Easy','Low','Look for text like: because "x" is null.')],a:[],u:'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/NullPointerException.html'},
+{id:'java-oom',n:'OutOfMemoryError',lang:'Java',re:/OutOfMemoryError/,s:"The JVM ran out of memory for the requested allocation.",y:"The heap limit is too low for the workload, or something keeps references and leaks memory.",
+f:[F('Raise the heap limit','Easy','Low','Set a larger -Xmx value in your JVM arguments or launcher memory slider.','-Xmx4G'),F('Look for a leak','Hard','Low','If memory grows over time, take a heap dump and inspect what holds the objects.')],a:["Don't keep raising the heap endlessly; a leak will still fill it."],u:'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/OutOfMemoryError.html'},
+{id:'java-so',n:'StackOverflowError',lang:'Java',re:/StackOverflowError/,s:"Method calls nested too deeply.",y:"Usually unbounded recursion; the repeated frames in the trace show the loop.",
+f:[F('Find the repeating frames','Easy','Low','The same few methods repeat; one of them lacks a working base case.')],a:[]},
+{id:'py-mnf',n:'ModuleNotFoundError',lang:'Python',re:/No module named '([^']+)'/,s:"Python couldn't find the module '$1' in the current environment.",y:"It isn't installed in the interpreter you are running, or you're in a different virtual environment. The pip package name can differ from the module name.",
+f:[F('Install it with the same interpreter','Easy','Low','Using python -m pip ensures pip matches the interpreter.','python -m pip install $1'),F('Check the active environment','Easy','Low','Confirm which Python is running.','python -c "import sys; print(sys.executable)"')],a:["Don't use sudo pip to fix this; use a virtual environment."],u:'https://docs.python.org/3/library/exceptions.html#ModuleNotFoundError'},
+{id:'py-key',n:'KeyError',lang:'Python',re:/KeyError: (.+)/,s:"A dictionary lookup used the key $1, which isn't present.",y:"The data doesn't contain that key, or the key's type or spelling differs.",
+f:[F('Print the available keys','Easy','Low','Inspect what the dictionary really contains before the failing line.'),F('Use .get() with a default','Easy','Low','Handle missing keys explicitly if they are expected.')],a:[],u:'https://docs.python.org/3/library/exceptions.html#KeyError'},
+{id:'py-type',n:'TypeError (Python)',lang:'Python',re:/TypeError: (.+)/,s:"An operation got a value of the wrong type: $1",y:"A variable holds a different type than expected, often None or a string where a number was needed.",
+f:[F('Inspect the types on the failing line','Easy','Low','Print type() of each operand at the line shown in the last frame.')],a:[]},
+{id:'js-type',n:'TypeError: property of undefined/null',lang:'JavaScript',re:/Cannot read propert(?:y|ies) of (undefined|null)/,s:"Code read a property of a value that was $1.",y:"A variable, function result or API response was empty when it was used.",
+f:[F('Find the value that is $1','Easy','Low','Check the file and line in the first frame and trace where the value comes from.'),F('Guard the access','Easy','Low','Use optional chaining (a?.b) or validate data before use.')],a:[],u:'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError'},
+{id:'js-ref',n:'ReferenceError',lang:'JavaScript',re:/ReferenceError: (\S+) is not defined/,s:"The name '$1' was used but never declared.",y:"A missing import or declaration, a typo, or a variable used outside its scope.",
+f:[F('Check imports and spelling','Easy','Low','Make sure $1 is declared or imported in the failing file.')],a:[],u:'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError'},
+{id:'node-mod',n:'Module could not be resolved',lang:'JavaScript',app:'Node.js',re:/Cannot find module '([^']+)'|ERR_MODULE_NOT_FOUND/,dep:1,s:"Node.js couldn't resolve the module '$1'.",y:"The package isn't installed, or a relative path or file extension is wrong (ES modules need explicit extensions).",
+f:[F('Install dependencies','Easy','Low','Run this in the project folder.','npm install'),F('Check the import path','Easy','Low','Verify the file exists and its extension and casing match.')],a:[]},
+{id:'git-nff',n:'Push rejected (non-fast-forward)',lang:'Git',re:/non-fast-forward|\[rejected\]|failed to push some refs/,s:"The remote has commits your local branch doesn't have, so Git refused the push.",y:"Someone pushed to the same branch, or history was rewritten locally.",
+f:[F('Integrate remote changes first','Medium','Low','Rebase your work onto the remote branch, then push again.','git pull --rebase')],a:["Don't force-push until you have checked what you would overwrite."]},
+{id:'git-auth',n:'Git authentication failed',lang:'Git',re:/Authentication failed|Permission denied \(publickey\)|could not read Username/,s:"Git couldn't authenticate with the remote.",y:"The token, password or SSH key is missing, expired or lacks access to the repository.",
+f:[F('Test your SSH key','Easy','Low','Check that the key is accepted.','ssh -T git@github.com'),F('Use a personal access token over HTTPS','Easy','Low','Passwords are no longer accepted by most hosts.')],a:[]},
+{id:'c-undef',n:'Undefined reference (linker)',lang:'C/C++',re:/undefined reference to [`']?([^'\n]+)/,dep:1,s:"The linker found a call to $1 but no definition.",y:"The implementing source file or library isn't part of the link step, or link order is wrong.",
+f:[F('Link the missing library or source','Medium','Low','Add the library with -l (placed after the objects that use it) or add the .c/.cpp file to the build.')],a:[]},
+{id:'segv',n:'Segmentation fault',lang:'C/C++',re:/Segmentation fault|SIGSEGV/,s:"The program accessed memory it doesn't own.",y:"Typical causes are null or dangling pointers and out-of-bounds access.",
+f:[F('Run with AddressSanitizer','Medium','Low','Rebuild with sanitizer support to get the exact faulting line.','gcc -g -fsanitize=address main.c')],a:[]}
+];
+const GEN=(e)=>({id:'generic',n:e?e.name.split('.').pop():'Error',s:e?`The program raised ${e.name}${e.msg?': '+e.msg:''}.`:'An error was reported.',y:"CrashLens has no specific rule for this error, so only the exception type and stack trace were used.",
+f:[F('Open the first frame in your own code','Easy','Low','Skip library frames and inspect that line and its inputs.'),F('Search the exact message','Easy','Low','Search the message text without paths, ids or timestamps.')],a:[]});
+
+function parseFrames(lines){const o=[];lines.forEach((l,i)=>{let m;
+ if(m=l.match(/^\s*at (?:[\w.]+\/)?([\w.$<>]+)\.([\w$<>]+)\(([^():]+):(\d+)\)/))o.push({language:'Java',className:m[1],function:m[2],file:m[3],line:+m[4],n:i+1});
+ else if(m=l.match(/^\s*File "([^"]+)", line (\d+), in (\S+)/))o.push({language:'Python',file:m[1],line:+m[2],function:m[3],n:i+1});
+ else if(m=l.match(/^\s*at (?:(.+?) \()?((?:file:\/\/|\/|[A-Za-z]:\\|\.)?[^\s()]+):(\d+):(\d+)\)?$/))o.push({language:'JavaScript',function:m[1],file:m[2],line:+m[3],column:+m[4],n:i+1})});return o}
+
+function classify(text,excs,frames){const names=excs.map(e=>e.name).join(' ');let language='Unknown';
+ if(/^(fatal|error): |\[(remote )?rejected\]|CONFLICT \(|Permission denied \(publickey\)|Authentication failed/m.test(text)&&!/Exception|Traceback/.test(text))language='Git';
+ else if(/undefined reference to|[Ss]egmentation fault|SIGSEGV|ld returned \d+/.test(text))language='C/C++';
+ else if(/Traceback \(most recent call last\)|No module named|\b(ModuleNotFound|Import|Key|Index|Attribute|FileNotFound|Permission|Memory)Error\b/.test(text)&&!/\.java:\d+/.test(text))language='Python';
+ else if(frames.some(f=>f.language==='Java')||/\bjava\.[a-z]|\.java:\d+|(Exception|Error)\b.*\bnet\.minecraft/.test(text)||/(?:[a-z]+\.)+[A-Z]\w*(Exception|Error)/.test(names))language='Java';
+ else if(frames.some(f=>f.language==='JavaScript')||/\b(Type|Reference|Syntax|Range)Error\b|Cannot read propert|ERR_MODULE_NOT_FOUND|Cannot find module|npm ERR!/.test(text))language='JavaScript';
+ return language}
+
+function detectEnv(text,lang){const g=r=>{const m=text.match(r);return m?m.slice(1).find(Boolean):null};
+ const mc=/minecraft|fabricloader|neoforge|org\.bukkit|io\.papermc/i.test(text);
+ const loader=!mc?null:/neoforge/i.test(text)?'NeoForge':/fabric/i.test(text)?'Fabric':/quilt/i.test(text)?'Quilt':/minecraftforge|\bforge\b/i.test(text)?'Forge':/papermc|\bPaper\b/.test(text)?'Paper':/spigot/i.test(text)?'Spigot':/bukkit/i.test(text)?'Bukkit':null;
+ const mods=[];for(const m of text.matchAll(/^\t+([a-z][a-z0-9_-]+): .+? (\d[\w.+\-]*)$/gm)){if(mods.length<300)mods.push({id:m[1],version:m[2]})}
+ const node=/npm ERR!|node:internal|ERR_MODULE_NOT_FOUND|Cannot find module|ERR_REQUIRE_ESM/.test(text);
+ return{mc,loader,mods,node,mcVer:g(/Minecraft Version:\s*(\S+)/)||g(/Minecraft (1\.\d+(?:\.\d+)?)/),loaderVer:g(/Fabric Loader\s+(\d[\w.\-+]*)/)||g(/fabricloader[ -](\d[\w.\-+]*)/i),
+  java:g(/Java Version:\s*([\d._]+)/)||g(/(?:openjdk|java) version "([^"]+)"/i)||g(/Java (\d+(?:\.\d+)*)/),os:g(/Operating System:\s*(.+)/)||g(/\bos\.name\W+(.+)/),arch:g(/\((amd64|x86_64|aarch64|arm64|x86)\)/),
+  mixins:(text.match(/Mixin apply failed|MixinApplyError|InvalidInjectionException|MixinTransformerError|Critical injection failure/g)||[]).length}}
+
+function suspectMod(text,frames,mods){const ids=new Set(mods.map(m=>m.id));const c=[];
+ for(const m of text.matchAll(/([a-z][a-z0-9_-]+)\.mixins?\.json/gi))c.push([m[1].toLowerCase(),'mixin config name']);
+ for(const f of frames)for(const seg of (f.className||'').toLowerCase().split('.'))if(ids.has(seg))c.push([seg,'stack frame package']);
+ const s=c.find(x=>!/^(fabric|minecraft|java|mixinextras|mixin)/.test(x[0]));return s?{id:s[0],via:s[1],version:(mods.find(m=>m.id===s[0])||{}).version}:null}
+
+/* Confidence: fixed weights, summed from evidence flags (max 100). Same input always gives the same score. */
+function score(f){const items=[['Known exception type',25,f.exc],['Matched a specific error pattern',25,f.pat],['Known environment',15,f.env],['Relevant stack frame',15,f.frames],['Known dependency relationship',10,f.dep],['Corroborating evidence (2+ matching lines)',10,f.corr]].map(([label,points,ok])=>({label,points,ok:!!ok}));return{score:items.reduce((a,i)=>a+(i.ok?i.points:0),0),items}}
+
+function analyze(raw){const text=raw.replace(/\r\n?/g,'\n').replace(/\x1b\[[0-9;]*m/g,'');const lines=text.split('\n');
+ const excs=[];lines.forEach((l,i)=>{const m=l.trim().match(ERRL);if(m)excs.push({n:i+1,name:m[1],msg:m[2]||'',caused:/^Caused by/.test(l.trim())})});
+ const frames=parseFrames(lines),language=classify(text,excs,frames),env=detectEnv(text,language);
+ const platform=env.mc?'Minecraft':env.node?'Node.js':language;
+ const top=language==='Python'?excs[excs.length-1]:excs.find(e=>!e.caused)||excs[0];
+ const causes=excs.filter(e=>e.caused),root=causes.length?causes[causes.length-1]:top;
+ const pat=P.find(p=>(!p.lang||p.lang===language)&&(!p.app||p.app===platform)&&p.re.test(text)&&(!p.need||p.need.test(text)));
+ if(!pat&&!top)return null;
+ const p=pat||GEN(top),sub=s=>{if(!s)return s;const m=pat&&text.match(pat.re);return s.replace(/\$1/g,m&&m[1]||'<name>')};
+ const evN=new Set();if(top)evN.add(top.n);if(root)evN.add(root.n);
+ lines.forEach((l,i)=>{if(pat&&(pat.re.test(l)||(pat.need&&pat.need.test(l))))evN.add(i+1)});
+ const evidence=[...evN].sort((a,b)=>a-b).slice(0,8).map(n=>({n,t:lines[n-1].trim().slice(0,300)}));
+ const sus=env.mc?suspectMod(text,frames,env.mods):null;
+ const conf=score({exc:!!top,pat:!!pat,env:platform!==language||!!env.java||!!env.mcVer,frames:frames.length>0,dep:pat&&pat.dep,corr:evidence.length>=2});
+ const title=top?top.name.split('.').pop():p.n;
+ return{version:1,title,language,platform,errorType:top?top.name:p.n,severity:'error',summary:sub(p.s),why:sub(p.y),pattern:p.id,evidence,
+  fixes:p.f.map(x=>({t:sub(x.t),d:x.d,r:x.r,w:sub(x.w),c:sub(x.c)})),avoid:p.a,doc:p.u,conf,env,frames,sus,exc:top,root,lines}}
+
+/* ---------- Samples ---------- */
+const SAMPLES={
+'Java: NoClassDefFoundError (LWJGL)':'---- Minecraft Crash Report ----\nDescription: Initializing game\n\njava.lang.NoClassDefFoundError: org/lwjgl/sdl/SDL\n\tat net.minecraft.client.Minecraft.<init>(Minecraft.java:512)\n\tat net.minecraft.client.main.Main.main(Main.java:210)\nCaused by: java.lang.ClassNotFoundException: org.lwjgl.sdl.SDL\n\tat java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)\n\n-- System Details --\n\tMinecraft Version: 1.21.1\n\tOperating System: Windows 11 (amd64) version 10.0\n\tJava Version: 21.0.5, Microsoft\n',
+'Java: NullPointerException':'Exception in thread "main" java.lang.NullPointerException: Cannot invoke "String.length()" because "name" is null\n\tat com.example.app.UserService.format(UserService.java:42)\n\tat com.example.app.Main.main(Main.java:11)\n',
+'Java: OutOfMemoryError':'Exception in thread "main" java.lang.OutOfMemoryError: Java heap space\n\tat java.base/java.util.Arrays.copyOf(Arrays.java:3512)\n\tat com.example.Loader.readAll(Loader.java:88)\n',
+'Python: ModuleNotFoundError':'Traceback (most recent call last):\n  File "app.py", line 3, in <module>\n    import requests\nModuleNotFoundError: No module named \'requests\'\n',
+'Python: KeyError':'Traceback (most recent call last):\n  File "main.py", line 14, in load\n    return cfg["database"]\nKeyError: \'database\'\n',
+'JavaScript: TypeError':"TypeError: Cannot read properties of undefined (reading 'map')\n    at renderList (/app/src/list.js:42:17)\n    at main (/app/src/index.js:8:3)\n",
+'JavaScript: ReferenceError':'ReferenceError: fetchUser is not defined\n    at init (/app/main.js:9:5)\n',
+'Minecraft: Fabric dependency error':'[main/ERROR]: Incompatible mods found!\nMod resolution failed\n - Mod \'Example Mod\' (examplemod) 1.4.0 requires version 0.100.0 or later of fabric-api, which is missing!\nMinecraft 1.21.1, Fabric Loader 0.16.5, Java 21.0.5\n',
+'Minecraft: Mixin error':'---- Minecraft Crash Report ----\norg.spongepowered.asm.mixin.transformer.throwables.MixinTransformerError: An unexpected critical error was encountered\nCaused by: org.spongepowered.asm.mixin.injection.throwables.InvalidInjectionException: @Inject annotation on onRender could not find any targets matching in net.minecraft.client.gui.hud.InGameHud. [examplemod.mixins.json:HudMixin]\n\tat net.minecraft.client.gui.hud.InGameHud.render(InGameHud.java:100)\n\tat com.example.examplemod.mixin.HudMixin.onRender(HudMixin.java:21)\n-- System Details --\n\tMinecraft Version: 1.21.1\n\tJava Version: 21.0.5, Microsoft\n\tFabric Mods:\n\t\tfabricloader: Fabric Loader 0.16.5\n\t\texamplemod: Example Mod 1.4.0\n',
+'Minecraft: Java version mismatch':'Error: LinkageError occurred while loading main class net.fabricmc.loader.impl.launch.knot.KnotClient\njava.lang.UnsupportedClassVersionError: net/minecraft/client/main/Main has been compiled by a more recent version of the Java Runtime (class file version 65.0), this version of the Java Runtime only recognizes class file versions up to 61.0\n'};
+
+/* ---------- App state & views ---------- */
+let view='analyze',res=null,raw='',curQ=null;
+const H=()=>store.get('cl:hist',[]);
+function setMsg(kind,title,body){const m=$('#msg');if(!m)return;m.replaceChildren(h('div',{class:'msg '+kind,role:'alert'},h('b',{},({info:'ⓘ ',warn:'▲ ',err:'✕ '}[kind])+title),body))}
+function reduce(t){const L=t.split('\n');if(t.length<1e6&&L.length<8000)return[t,null];const keep=new Set();
+ L.forEach((l,i)=>{if(i<50||i>=L.length-50)keep.add(i);else if(ERRL.test(l.trim())||/^\s+at |Caused by|Traceback|FATAL|fatal:|undefined reference/.test(l))for(let k=Math.max(0,i-1);k<=i+1;k++)keep.add(k)});
+ const out=[];let last=-1;[...keep].sort((a,b)=>a-b).forEach(i=>{if(i!==last+1)out.push('… ['+(i-last-1)+' lines omitted] …');out.push(L[i]);last=i});
+ let o=out.join('\n');if(o.length>1e6)o=o.slice(0,5e5)+'\n… [truncated] …\n'+o.slice(-5e5);
+ return[o,`This log is ${(t.length/1e6).toFixed(1)} MB. CrashLens extracted the most relevant sections instead of loading the entire file into the analysis interface.`]}
+function save(r,t){if(!S.hist)return;const a=H();a.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),ts:Date.now(),title:r.title,language:r.language,application:r.platform,errorType:r.errorType,summary:r.summary,confidence:r.conf.score,log:S.full?t.slice(0,200000):undefined});store.set('cl:hist',a.slice(0,100))}
+function nav(v){view=v;res=null;render()}
+function render(){const m=$('#main');m.replaceChildren();document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.v===view?'page':'false'));window.scrollTo(0,0);({analyze:vAnalyze,history:vHistory,formats:vFormats,settings:vSettings,about:vAbout})[view](m)}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.v)));
+
+function vAnalyze(m){if(res)return vResult(m);
+ const ta=h('textarea',{'aria-label':'Error or log input',spellcheck:'false',autocapitalize:'off',autocomplete:'off',autocorrect:'off',wrap:'off',placeholder:'Paste an error, stack trace or log, or drop a log file here'});ta.value=raw;
+ const gut=h('div',{class:'gut','aria-hidden':'true'}),ed=h('div',{class:'ed'},gut,ta);
+ const sync=()=>{raw=ta.value;gut.style.display=S.ln?'':'none';gut.textContent=S.ln?Array.from({length:Math.min(raw.split('\n').length,20000)},(_,i)=>i+1).join('\n'):'';gut.scrollTop=ta.scrollTop};
+ ta.addEventListener('input',sync);ta.addEventListener('scroll',()=>{gut.scrollTop=ta.scrollTop});
+ const load=(t)=>{const[o,note]=reduce(t);ta.value=o;sync();setMsg('info',note?'Large log':'Loaded',note||'File loaded as text. It is never executed.')};
+ const readFile=async f=>{if(f.size>25e6)return setMsg('err','File too large','CrashLens accepts text files up to 25 MB.');
+  if(/\.(exe|dll|so|png|jpe?g|gif|zip|jar|class|pdf|bin)$/i.test(f.name))return setMsg('err','Unsupported file','CrashLens only reads text files such as .txt, .log, .crash, .md, .json and .xml.');
+  const t=await f.text();if(t.slice(0,2000).includes('\u0000'))return setMsg('err','Unsupported file','This looks like a binary file. Upload a text log instead.');load(t)};
+ ed.addEventListener('dragover',e=>{e.preventDefault();ed.classList.add('drop')});ed.addEventListener('dragleave',()=>ed.classList.remove('drop'));
+ ed.addEventListener('drop',e=>{e.preventDefault();ed.classList.remove('drop');const f=e.dataTransfer.files[0];if(f)readFile(f)});
+ const fi=h('input',{type:'file',accept:'.txt,.log,.crash,.md,.json,.xml,.out,.csv,text/*',hidden:'',onchange:()=>{if(fi.files[0])readFile(fi.files[0]);fi.value=''}});
+ const sel=h('select',{'aria-label':'Try an example',onchange:()=>{if(sel.value){ta.value=SAMPLES[sel.value];sync();setMsg('info','Example loaded','Press Analyze to run it.')}sel.value=''}},h('option',{value:''},'Try an example'),Object.keys(SAMPLES).map(k=>h('option',{value:k},k)));
+ const run=()=>{const t=ta.value;if(!t.trim())return setMsg('info','Nothing to analyze yet','Paste an error, drop a log file, or try one of the examples.');
+  try{const r=analyze(t);if(!r)return setMsg('warn','No recognizable error found','CrashLens found no exception, stack trace or known error pattern. Include the full output around the failure, including lines that start with "Caused by" or "Traceback".');res=r;raw=t;save(r,t);render()}catch(e){setMsg('err','Analysis failed',String(e&&e.message||e))}};
+ m.append(h('div',{class:'bar'},h('button',{class:'btn pri',onclick:run},'Analyze'),h('button',{class:'btn',onclick:async()=>{try{ta.value=await navigator.clipboard.readText();sync()}catch{setMsg('warn','Paste blocked','Your browser blocked clipboard access. Long-press the editor and choose Paste.')}}},'Paste'),h('button',{class:'btn',onclick:()=>fi.click()},'Upload'),sel,h('span',{class:'sp'}),h('button',{class:'btn',onclick:()=>{ta.value='';sync();$('#msg').replaceChildren()}},'Clear')),fi,ed,h('div',{id:'msg'}),
+  h('p',{class:'mu'},'Analysis runs in your browser. Nothing is uploaded, and nothing from your log is ever executed.'));sync()}
+
+function sec(t,...c){return h('section',{class:'pn'},h('h2',{},t),...c)}
+function vResult(m){const r=res;
+ m.append(h('div',{class:'bar'},h('button',{class:'btn',onclick:()=>{res=null;render()}},'← Edit input'),h('span',{class:'sp'}),h('button',{class:'btn',onclick:()=>copy(JSON.stringify({version:1,createdAt:new Date().toISOString(),input:{language:r.language,application:r.platform},result:{errorType:r.errorType,summary:r.summary,confidence:r.conf.score}},null,2))},'Copy as JSON')));
+ const meter=h('i');meter.style.width=r.conf.score+'%';
+ m.append(h('section',{class:'pn'},h('div',{class:'mu'},[r.language,r.platform!==r.language?r.platform:null,'● Error'].filter(Boolean).join(' • ')),h('h1',{class:'mono'},r.title),h('p',{},r.summary),h('strong',{},'Confidence: '+r.conf.score+'%'),h('div',{class:'meter','aria-hidden':'true'},meter),h('ul',{class:'chk'},r.conf.items.map(i=>h('li',{class:i.ok?'ok':'no'},(i.ok?'✓ ':'✗ ')+i.label+' (+'+i.points+')')))));
+ m.append(sec('What happened',h('p',{},r.summary),r.exc&&h('p',{class:'mono mu'},r.exc.name+(r.exc.msg?': '+r.exc.msg:''))));
+ m.append(sec('Why it happened',h('p',{},r.why),r.pattern==='generic'&&h('p',{class:'mu'},'Confidence is lower because no specific rule matched.'),r.doc&&h('a',{href:r.doc,target:'_blank',rel:'noopener noreferrer'},'Learn more (official docs)')));
+ if(r.env.mc)m.append(sec('Minecraft',h('dl',{},...[['Minecraft',r.env.mcVer],['Loader',[r.env.loader,r.env.loaderVer].filter(Boolean).join(' ')],['Java',r.env.java],['OS',[r.env.os,r.env.arch].filter(Boolean).join(' ')],['Mixin errors',r.env.mixins||null],['Mods detected',r.env.mods.length||null],['Suspected mod',r.sus&&`${r.sus.id}${r.sus.version?' '+r.sus.version:''} (from ${r.sus.via})`]].filter(x=>x[1]).flatMap(([k,v])=>[h('dt',{},k),h('dd',{},String(v))])),r.sus&&h('p',{class:'mu'},'This is a suspicion, not proof: the mod appears in the failing code path, but another mod or version mismatch could be the real cause.'),r.env.mods.length>0&&h('details',{},h('summary',{},'Mods ('+r.env.mods.length+')'),h('div',{class:'mono mu'},r.env.mods.slice(0,60).map(x=>h('div',{},x.id+' '+x.version))))));
+ const ev=sec('Evidence',h('p',{class:'mu'},'Lines from your log that support this conclusion.'),r.evidence.map(e=>h('div',{class:'ev1'},h('div',{class:'mu'},'Line '+e.n),h('pre',{},e.t),h('button',{class:'btn',onclick:()=>jump(e.n)},'Show in original log'))));m.append(ev);
+ m.append(sec('Suggested fixes',...r.fixes.map(x=>h('div',{class:'fix'},h('strong',{},x.t),h('div',{},h('span',{class:'tag'},'Difficulty: '+x.d),h('span',{class:'tag'},'Risk: '+x.r)),h('p',{},x.w),x.c&&h('div',{class:'cmd'},h('code',{'aria-label':'Command, not executed'},x.c),h('button',{class:'btn',onclick:()=>copy(x.c)},'Copy')))),r.avoid.length>0&&h('div',{class:'fix'},h('strong',{},'What not to do'),h('ul',{},r.avoid.map(a=>h('li',{},a)))),h('p',{class:'mu'},'Commands are shown for you to review and copy. CrashLens never runs anything.')));
+ m.append(sec('Environment',h('dl',{},...[['Language',r.language],['Platform',r.platform],['Error type',r.errorType],['Severity','Error'],['Java',!r.env.mc&&r.env.java],['Node.js tooling',r.env.node&&'yes']].filter(x=>x[1]).flatMap(([k,v])=>[h('dt',{},k),h('dd',{class:'mono'},String(v))]))));
+ m.append(sec('Stack trace ('+r.frames.length+' frames)',r.frames.length?r.frames.slice(0,40).map(f=>h('code',{class:'frame'},`${f.className?f.className+'.':''}${f.function||'(anonymous)'}  ${f.file||''}${f.line?':'+f.line:''}${f.column?':'+f.column:''}`)):h('p',{class:'mu'},'No stack frames were found in this input.')));
+ const v=viewer(r.lines,new Set(r.evidence.map(e=>e.n)));m.append(sec('Original log',v.el));window.__jump=v.jump}
+const jump=n=>window.__jump&&window.__jump(n);
+function viewer(lines,ev){const q=h('input',{type:'search',class:'in','aria-label':'Search log',placeholder:'Search (Ctrl/Cmd+F)'}),jn=h('input',{type:'number',class:'in sm','aria-label':'Jump to line',placeholder:'Line',min:1});
+ const body=h('div',{class:'lb'+(S.wrap?' wr':''),tabindex:'0',role:'region','aria-label':'Log viewer'});
+ const rows=lines.slice(0,5000).map((t,i)=>h('div',{class:'row'+(ev.has(i+1)?' ev':''),id:'L'+(i+1)},h('span',{class:'ln',title:'Copy line',onclick:()=>copy(t)},i+1),h('span',{class:'tx'},t||' ')));body.append(...rows);
+ let hits=[],cur=-1;const clr=()=>rows.forEach(r=>r.classList.remove('hit'));
+ const go=d=>{clr();if(!hits.length)return;cur=(cur+d+hits.length)%hits.length;hits[cur].classList.add('hit');hits[cur].scrollIntoView({block:'center'})};
+ q.addEventListener('input',()=>{const s=q.value.toLowerCase();hits=s?rows.filter((r,i)=>lines[i].toLowerCase().includes(s)):[];cur=-1;go(1)});
+ q.addEventListener('keydown',e=>{if(e.key==='Enter')go(e.shiftKey?-1:1);if(e.key==='Escape'){q.value='';hits=[];clr()}});
+ const jump=n=>{const r=rows[n-1];if(!r)return toast('Line not shown');clr();r.classList.add('hit');r.scrollIntoView({block:'center'});setTimeout(()=>r.classList.remove('hit'),1800)};
+ jn.addEventListener('keydown',e=>{if(e.key==='Enter')jump(+jn.value)});curQ=q;
+ const el=h('div',{},h('div',{class:'bar'},q,h('button',{class:'btn','aria-label':'Previous match',onclick:()=>go(-1)},'↑'),h('button',{class:'btn','aria-label':'Next match',onclick:()=>go(1)},'↓'),jn,h('button',{class:'btn',onclick:()=>{body.classList.toggle('wr');S.wrap=body.classList.contains('wr');saveS()}},'Wrap')),body,lines.length>5000&&h('p',{class:'mu'},'Showing the first 5000 of '+lines.length+' lines.'));
+ return{el,jump}}
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='f'&&res&&curQ){e.preventDefault();curQ.focus()}});
+
+function vHistory(m){const a=H();m.append(h('div',{class:'bar'},h('h1',{},'History'),h('span',{class:'sp'}),a.length>0&&h('button',{class:'btn',onclick:function(){if(this.dataset.c){store.set('cl:hist',[]);render()}else{this.dataset.c=1;this.textContent='Confirm clear all'}}},'Clear history')));
+ m.append(h('p',{class:'mu'},S.hist?'Entries are stored only in this browser. '+(S.full?'Full logs are being saved with entries (change in Settings).':'Full logs are not stored; only summaries.'):'History saving is turned off in Settings.'));
+ if(!a.length)return m.append(h('section',{class:'pn'},h('h2',{},'🔎 No saved analyses yet'),h('p',{},'Analyses you run will appear here.'),h('button',{class:'btn pri',onclick:()=>nav('analyze')},'New analysis')));
+ a.forEach(x=>{const t=h('strong',{class:'grow'},x.title);const row=h('div',{class:'hrow'},t,h('span',{class:'tag'},x.language+(x.application!==x.language?' • '+x.application:'')),h('span',{class:'tag'},x.confidence+'%'));
+  const rename=()=>{const i=h('input',{class:'in grow','aria-label':'Rename',value:x.title});t.replaceWith(i);i.focus();const done=()=>{const b=H();const e=b.find(z=>z.id===x.id);if(e&&i.value.trim())e.title=i.value.trim();store.set('cl:hist',b);render()};i.addEventListener('keydown',e=>{if(e.key==='Enter')done()});i.addEventListener('blur',done)};
+  m.append(h('section',{class:'pn'},row,h('p',{class:'mu'},new Date(x.ts).toLocaleString()+' • '+x.errorType),h('p',{},x.summary),h('div',{class:'bar'},
+   h('button',{class:'btn',onclick:()=>{if(x.log){raw=x.log;res=analyze(x.log);view='analyze';render()}else{raw='';nav('analyze');setMsg('info','Full log not stored','Only a summary was saved. Paste or upload the log again to re-open the full analysis.')}}},'Reopen'),h('button',{class:'btn',onclick:rename},'Rename'),h('button',{class:'btn',onclick:()=>{store.set('cl:hist',H().filter(z=>z.id!==x.id));render()}},'Delete'))))})}
+
+function vSettings(m){const tg=(k,l,d)=>h('label',{class:'chkl'},h('input',{type:'checkbox',...(S[k]?{checked:''}:{}),onchange:e=>{S[k]=e.target.checked;saveS()}}),h('span',{},l,h('div',{class:'mu'},d)));
+ m.append(h('h1',{},'Settings'),
+ sec('Appearance',h('select',{'aria-label':'Theme',onchange:e=>{S.theme=e.target.value;saveS()}},['system','dark','light'].map(v=>h('option',{value:v,...(S.theme===v?{selected:''}:{})},v[0].toUpperCase()+v.slice(1))))),
+ sec('Analysis',h('p',{},'Rule-based (local, deterministic). This is the only analysis mode implemented.'),h('label',{class:'chkl'},h('input',{type:'checkbox',disabled:'',...{}}),h('span',{},'External AI analysis: OFF',h('div',{class:'mu'},'Not implemented yet. When added, it will stay off by default and will tell you exactly what would be sent before anything leaves your device.')))),
+ sec('Privacy',tg('hist','Store history','Save a summary of each analysis in this browser.'),tg('full','Store full logs with history','Saves up to 200 KB of each log in this browser so you can reopen analyses. Logs may contain private paths or usernames.')),
+ sec('Editor',tg('ln','Line numbers',''),tg('wrap','Wrap lines in the log viewer',''),h('label',{},'Font size: ',h('input',{type:'range',min:13,max:20,value:S.fs,'aria-label':'Font size',onchange:e=>{S.fs=+e.target.value;saveS()}}))))}
+
+const FM=[['Java','Exception, RuntimeException, NullPointerException, ClassNotFoundException, NoClassDefFoundError, OutOfMemoryError, StackOverflowError, UnsupportedClassVersionError.','Parses "at pkg.Class.method(File.java:12)" frames and Caused by chains.','Messages are matched by text; no bytecode or classpath inspection.'],
+['Python','Traceback, ModuleNotFoundError, KeyError, TypeError (generic), plus generic handling of other *Error names.','Parses File "x.py", line N, in fn frames.','Dedicated rules exist for only a few exceptions.'],
+['JavaScript / TypeScript / Node.js','TypeError (undefined/null property), ReferenceError, module resolution (Cannot find module, ERR_MODULE_NOT_FOUND).','Parses "at fn (file:line:col)" frames.','No source map support. Many npm, ESM and promise errors get only a generic explanation.'],
+['C / C++','Undefined reference (linker), segmentation fault.','No frame parser.','Compiler error messages are not specifically analyzed yet.'],
+['Git','Push rejected (non-fast-forward), authentication failures.','Text matching only.','Merge conflicts and detached HEAD have no dedicated rules yet.'],
+['Minecraft','Crash reports and logs for Fabric, Forge, NeoForge, Quilt, Paper, Spigot, Bukkit: LWJGL failures, Mixin failures, missing dependencies, Java version mismatch.','Extracts Minecraft/loader/Java versions, OS, mod list (Fabric crash report format), suspected mod from mixin config names and stack packages.','Mod list extraction is tuned to the Fabric crash report layout. A suspected mod is a hint, not proof.'],
+['Generic logs','Any text containing an exception-style line or stack frames.','Large logs are reduced to error-adjacent lines in the main thread (no Web Worker yet).','Logs with no recognizable error show a "no recognizable error" message.']];
+function vFormats(m){m.append(h('h1',{},'Supported formats'),h('p',{class:'mu'},'What CrashLens understands today. Anything not listed here is not claimed.'));FM.forEach(([n,e,p,l])=>m.append(h('details',{class:'pn'},h('summary',{},h('strong',{},n)),h('p',{},h('b',{},'Errors: '),e),h('p',{},h('b',{},'Parsing: '),p),h('p',{class:'mu'},h('b',{},'Limits: '),l))))}
+function vAbout(m){m.append(h('h1',{},'About CrashLens'),sec('Turn scary errors into understandable answers.',h('p',{},'CrashLens is an open-source developer tool designed to make technical errors easier to understand. It analyzes logs locally using deterministic parsers and pattern matching, with optional AI analysis planned for future versions.')),sec('Privacy',h('p',{},'Your logs are processed locally in your browser. This version has no external AI provider and sends nothing anywhere. Uploaded files are read as text only and never executed. Log content is rendered as plain text, never as HTML.')),sec('Not built yet',h('p',{},'AI analysis, CLI, GitHub Action, import/export files, Web Worker parsing, and a full multi-package React/Vite codebase with tests. This page is a single-file build of the core app.')))}
+applyTheme();render();
+</script></body></html>
