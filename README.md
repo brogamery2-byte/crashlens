@@ -4,7 +4,7 @@
 
 CrashLens is an open-source developer tool that takes error messages, stack traces and crash logs and explains what happened, why, and what to try. Analysis is deterministic (parsers and pattern matching) and runs entirely in your browser.
 
-> Status: early version. It is a single static page (`index.html`) with no build step.
+> Status: early version. The UI is a single static page (`index.html`); the analysis engine also exists as tested TypeScript modules in `src/`.
 
 <!-- Screenshots: add images to /docs and link them here -->
 
@@ -25,21 +25,43 @@ Java (NoClassDefFoundError, ClassNotFoundException, NullPointerException, OutOfM
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder:
+Open `index.html` in a browser, or serve the folder (`python3 -m http.server 8000`). Any static host works (GitHub Pages, Cloudflare Pages, Netlify) with no build command and the repository root as the publish directory.
+
+## Development
 
 ```
-python3 -m http.server 8000
+npm install
+npm run typecheck   # tsc --noEmit
+npm test            # vitest
+npm run build       # compiles src/ to dist/
 ```
 
-Any static host works (GitHub Pages, Cloudflare Pages, Netlify). No build command; publish directory is the repository root.
+## Project structure
+
+```
+index.html            standalone UI (contains an inlined copy of the engine)
+src/analyzer/         the engine as TypeScript modules
+  stacktrace.ts       exception-line regex and Java/Python/JS frame parser
+  classifier.ts       language detection
+  environment.ts      Minecraft/loader/Java/OS detection, suspected mod
+  patterns.ts         pattern database
+  confidence.ts       evidence-weighted score
+  analyze.ts          the pipeline
+  normalize.ts        large-log reduction
+  index.ts            public API and RuleBasedAnalyzer (AnalysisProvider)
+src/samples.ts        example inputs
+tests/                Vitest tests
+```
+
+**Known duplication:** `index.html` still carries its own copy of the engine. The TypeScript modules are the tested source of truth; wiring the page to import them (for example with Vite) is the next step, and until then changes must be made in both places.
 
 ## Privacy
 
 Logs are processed locally. Nothing is uploaded. Uploaded files are read as text and never executed, and log content is rendered as plain text. Commands in suggested fixes are only displayed for you to copy. There is no external AI provider in this version.
 
-## Architecture
+## Confidence
 
-All code lives in `index.html`. The analysis pipeline is: normalize, extract exceptions, parse stack frames, classify, detect environment, match patterns, collect evidence, score confidence. Confidence is a fixed-weight sum (exception +25, specific pattern +25, known environment +15, stack frame +15, dependency relationship +10, 2+ corroborating lines +10).
+A fixed-weight sum of evidence: exception found +25, specific pattern +25, known environment +15, stack frame +15, dependency relationship +10, two or more matching lines +10.
 
 ## Roadmap
 
@@ -49,8 +71,8 @@ All code lives in `index.html`. The analysis pipeline is: normalize, extract exc
 - [x] Minecraft detection
 - [x] Local history
 - [x] Responsive UI
-- [ ] Split into TypeScript modules (analyzer reusable from a CLI)
-- [ ] Unit tests and CI
+- [x] Analyzer split into TypeScript modules with Vitest tests and CI (typecheck, test, build)
+- [ ] Wire the UI to the TypeScript modules (Vite + React) and add ESLint/Prettier
 - [ ] More patterns (merge conflicts, ESM/CommonJS, compiler errors)
 - [ ] Web Worker parsing for very large logs
 - [ ] AI-assisted analysis (opt-in, off by default)
@@ -58,7 +80,7 @@ All code lives in `index.html`. The analysis pipeline is: normalize, extract exc
 
 ## Contributing
 
-Issues and pull requests are welcome. New patterns are the easiest contribution: add an entry to the `P` array in `index.html`.
+Issues and pull requests are welcome. New patterns are the easiest contribution: add an entry to `src/analyzer/patterns.ts` (and, until the UI imports the modules, the `P` array in `index.html`).
 
 ## License
 
