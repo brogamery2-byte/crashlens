@@ -49,11 +49,15 @@ details{margin:8px 0}summary{cursor:pointer;min-height:32px}
 label.chkl{display:flex;gap:10px;align-items:flex-start;min-height:40px;padding:4px 0}label.chkl input{margin-top:5px;width:18px;height:18px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 @media(max-width:520px){dl{grid-template-columns:1fr}dd{margin-bottom:6px}.logo span{display:none}}
+#beta{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#f59e0b;color:#1a1100;font-weight:600;text-align:center;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:2px solid #b45309}
+#beta[hidden]{display:none}
+main{padding-bottom:72px}
+#toast{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 </style></head>
 <body>
 <header><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M8 10.5h5"/></svg><span>CrashLens</span></div>
 <nav aria-label="Main"><button data-v="analyze">Analyze</button><button data-v="history">History</button><button data-v="formats">Supported formats</button><button data-v="settings">Settings</button><button data-v="about">About</button></nav></header>
-<main id="main"></main><div id="toast" role="status" aria-live="polite"></div>
+<main id="main"></main><div id="beta" role="note" hidden>⚠ This is a preview, expect bugs</div><div id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
 const $=s=>document.querySelector(s);
@@ -322,5 +326,7 @@ const FM=[['Java','Exception, RuntimeException, NullPointerException, ClassNotFo
 ['Generic logs','Any text containing an exception-style line or stack frames.','Large logs are reduced to error-adjacent lines in the main thread (no Web Worker yet).','Logs with no recognizable error show a "no recognizable error" message.']];
 function vFormats(m){m.append(h('h1',{},'Supported formats'),h('p',{class:'mu'},'What CrashLens understands today. Anything not listed here is not claimed.'));FM.forEach(([n,e,p,l])=>m.append(h('details',{class:'pn'},h('summary',{},h('strong',{},n)),h('p',{},h('b',{},'Errors: '),e),h('p',{},h('b',{},'Parsing: '),p),h('p',{class:'mu'},h('b',{},'Limits: '),l))))}
 function vAbout(m){m.append(h('h1',{},'About CrashLens'),sec('Turn scary errors into understandable answers.',h('p',{},'CrashLens is an open-source developer tool designed to make technical errors easier to understand. It analyzes logs locally using deterministic parsers and pattern matching, with optional AI analysis planned for future versions.')),sec('Privacy',h('p',{},'Your logs are processed locally in your browser. This version has no external AI provider and sends nothing anywhere. Uploaded files are read as text only and never executed. Log content is rendered as plain text, never as HTML.')),sec('Not built yet',h('p',{},'AI analysis, CLI, GitHub Action, import/export files, Web Worker parsing, and a full multi-package React/Vite codebase with tests. This page is a single-file build of the core app.')))}
+/* Preview banner: shown everywhere except the production site, so this file is safe to merge into main. */
+if(location.hostname!=='crashlens.pages.dev')$('#beta').hidden=false;
 applyTheme();render();
 </script></body></html>
