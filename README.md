@@ -3,6 +3,7 @@
 **Turn scary errors into understandable answers.**
 
 [![CI](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml/badge.svg)](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/brogamery2-byte/crashlens)](https://github.com/brogamery2-byte/crashlens/releases)
 [![License: MIT](https://img.shields.io/github/license/brogamery2-byte/crashlens)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/brogamery2-byte/crashlens)](https://github.com/brogamery2-byte/crashlens/commits/main)
 [![Live demo](https://img.shields.io/badge/demo-crashlens.pages.dev-blue)](https://crashlens.pages.dev)
