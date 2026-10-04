@@ -3,11 +3,9 @@
 **Turn scary errors into understandable answers.**
 
 [![CI](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml/badge.svg)](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/brogamery2-byte/crashlens)](https://github.com/brogamery2-byte/crashlens/releases)
 [![License: MIT](https://img.shields.io/github/license/brogamery2-byte/crashlens)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/brogamery2-byte/crashlens)](https://github.com/brogamery2-byte/crashlens/commits/main)
-[![Live production](https://img.shields.io/badge/production-crashlens.pages.dev-blue)](https://crashlens.pages.dev)
-[![Live preview](https://img.shields.io/badge/preview-beta.crashlens.pages.dev-orange)](https://beta.crashlens.pages.dev)
+[![Live demo](https://img.shields.io/badge/demo-crashlens.pages.dev-blue)](https://crashlens.pages.dev)
 [![Runs locally](https://img.shields.io/badge/privacy-runs%20locally-brightgreen)](#privacy)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#contributing)
 
@@ -38,22 +36,32 @@ Java (NoClassDefFoundError, ClassNotFoundException, NullPointerException, OutOfM
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder (`python3 -m http.server 8000`). Any static host works (GitHub Pages, Cloudflare Pages, Netlify) with no build command and the repository root as the publish directory.
+```
+npm install
+npm run dev       # local dev server
+npm run build     # production build into dist/
+npm run preview   # serve the production build
+```
+
+The UI uses ES modules, so opening `index.html` directly from disk no longer works; use the dev server or a build.
+
+**Hosting (Cloudflare Pages, Netlify, GitHub Pages):** build command `npm run build`, output directory `dist`. If the host's default Node version is old, set `NODE_VERSION=22`.
 
 ## Development
 
 ```
-npm install
 npm run typecheck   # tsc --noEmit
 npm test            # vitest
-npm run build       # compiles src/ to dist/
 ```
 
 ## Project structure
 
 ```
-index.html            standalone UI (contains an inlined copy of the engine)
-src/analyzer/         the engine as TypeScript modules
+index.html            page skeleton
+vite.config.js        Vite config
+src/ui/main.js        UI (plain JavaScript; renders results from the analyzer)
+src/ui/style.css      styles
+src/analyzer/         the engine as TypeScript modules (the only copy)
   stacktrace.ts       exception-line regex and Java/Python/JS frame parser
   classifier.ts       language detection
   environment.ts      Minecraft/loader/Java/OS detection, suspected mod
@@ -63,10 +71,10 @@ src/analyzer/         the engine as TypeScript modules
   normalize.ts        large-log reduction
   index.ts            public API and RuleBasedAnalyzer (AnalysisProvider)
 src/samples.ts        example inputs
-tests/                Vitest tests
+tests/                Vitest tests for the engine
 ```
 
-**Known duplication:** `index.html` still carries its own copy of the engine. The TypeScript modules are the tested source of truth; wiring the page to import them (for example with Vite) is the next step, and until then changes must be made in both places.
+The UI and tests share the same engine code. The UI layer itself has no automated tests yet.
 
 ## Privacy
 
@@ -85,7 +93,8 @@ A fixed-weight sum of evidence: exception found +25, specific pattern +25, known
 - [x] Local history
 - [x] Responsive UI
 - [x] Analyzer split into TypeScript modules with Vitest tests and CI (typecheck, test, build)
-- [ ] Wire the UI to the TypeScript modules (Vite + React) and add ESLint/Prettier
+- [x] UI wired to the TypeScript modules (Vite)
+- [ ] Convert the UI script to TypeScript, add UI tests, ESLint and Prettier
 - [ ] More patterns (merge conflicts, ESM/CommonJS, compiler errors)
 - [ ] Web Worker parsing for very large logs
 - [ ] AI-assisted analysis (opt-in, off by default)
@@ -93,9 +102,8 @@ A fixed-weight sum of evidence: exception found +25, specific pattern +25, known
 
 ## Contributing
 
-Issues and pull requests are welcome. New patterns are the easiest contribution: add an entry to `src/analyzer/patterns.ts` (and, until the UI imports the modules, the `P` array in `index.html`).
+Issues and pull requests are welcome. New patterns are the easiest contribution: add an entry to `src/analyzer/patterns.ts` and a test case in `tests/analyzer.test.ts`.
 
 ## License
 
 MIT, see [LICENSE](LICENSE).
-
