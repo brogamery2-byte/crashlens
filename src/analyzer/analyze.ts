@@ -1,4 +1,5 @@
 import { classify } from './classifier.js';
+import { normalizeLog } from './normalize.js';
 import { score } from './confidence.js';
 import { detectEnv, suspectMod } from './environment.js';
 import { GEN, P } from './patterns.js';
@@ -10,7 +11,7 @@ import type { AnalysisResult, ExcLine } from './types.js';
  * -> match patterns -> collect evidence lines -> score confidence. Deterministic and offline.
  * Returns null when no exception or known pattern is found.
  */
-export function analyze(raw: string): AnalysisResult|null{const text=raw.replace(/\r\n?/g,'\n').replace(/\x1b\[[0-9;]*m/g,'');const lines=text.split('\n');
+export function analyze(raw: string): AnalysisResult|null{const text=normalizeLog(raw);const lines=text.split('\n');
  const excs: ExcLine[]=[];lines.forEach((l,i)=>{const m=l.trim().match(ERRL);if(m)excs.push({n:i+1,name:m[1],msg:m[2]||'',caused:/^Caused by/.test(l.trim())})});
  const frames=parseFrames(lines),language=classify(text,excs,frames),env=detectEnv(text);
  const platform=env.mc?'Minecraft':env.node?'Node.js':language;
@@ -26,5 +27,5 @@ export function analyze(raw: string): AnalysisResult|null{const text=raw.replace
  const conf=score({exc:!!top,pat:!!pat,env:platform!==language||!!env.java||!!env.mcVer,frames:frames.length>0,dep:pat&&pat.dep,corr:evidence.length>=2});
  const title=top?top.name.split('.').pop()??top.name:p.n;
  return{version:1,title,language,platform,errorType:title,severity:'error',summary:sub(p.s),why:sub(p.y),pattern:p.id,evidence,
-  fixes:p.f.map(x=>({t:sub(x.t),d:x.d,r:x.r,w:sub(x.w),c:x.c?sub(x.c):undefined})),avoid:p.a,doc:p.u,conf,env,frames,sus,exc:top,root,lines}}
+  fixes:p.f.map(x=>({t:sub(x.t),d:x.d,r:x.r,w:sub(x.w),c:x.c?sub(x.c):undefined})),avoid:p.a,doc:p.u,conf,env,frames,frameCount:frames.length,sus,exc:top,root,lines}}
 

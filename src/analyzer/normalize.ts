@@ -6,3 +6,8 @@ export function reduceLog(t: string): [string, string | null]{const L=t.split('\
  const out: string[]=[];let last=-1;[...keep].sort((a,b)=>a-b).forEach(i=>{if(i!==last+1)out.push('… ['+(i-last-1)+' lines omitted] …');out.push(L[i]);last=i});
  let o=out.join('\n');if(o.length>1e6)o=o.slice(0,5e5)+'\n… [truncated] …\n'+o.slice(-5e5);
  return[o,`This log is ${(t.length/1e6).toFixed(1)} MB. CrashLens extracted the most relevant sections instead of loading the entire file into the analysis interface.`]}
+
+/** Strips carriage returns and ANSI colour codes. Line numbers everywhere refer to the normalized text. */
+export function normalizeLog(raw: string): string {
+  return raw.replace(/\r\n?/g, '\n').replace(/\x1b\[[0-9;]*m/g, '');
+}

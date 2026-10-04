@@ -3,7 +3,7 @@ import type { AnalysisInput, AnalysisProvider, AnalysisResult } from './types.js
 
 export { analyze } from './analyze.js';
 export { score } from './confidence.js';
-export { reduceLog } from './normalize.js';
+export { normalizeLog, reduceLog } from './normalize.js';
 export { parseFrames } from './stacktrace.js';
 export { SAMPLES } from '../samples.js';
 export type * from './types.js';

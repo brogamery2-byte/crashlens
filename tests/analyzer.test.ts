@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RuleBasedAnalyzer, SAMPLES, analyze, parseFrames, reduceLog, score } from '../src/analyzer/index.js';
+import { RuleBasedAnalyzer, SAMPLES, analyze, normalizeLog, parseFrames, reduceLog, score } from '../src/analyzer/index.js';
 
 describe('classification', () => {
   it('Java NoClassDefFoundError', () => {
@@ -228,4 +228,21 @@ describe('pattern coverage', () => {
       expect(analyze(text)?.pattern).toBe(id);
     });
   }
+});
+
+describe('full-log scanning', () => {
+  it('normalizes line endings and ANSI colours without changing line count', () => {
+    expect(normalizeLog('a\r\nb\rc\u001b[31md\u001b[0m')).toBe('a\nb\ncd');
+  });
+  it('finds an error buried deep in a huge log, with the true line number', () => {
+    const lines = Array.from({ length: 200000 }, (_, i) => `[INFO] line ${i}`);
+    lines[150000] = 'java.lang.OutOfMemoryError: Java heap space';
+    const r = analyze(lines.join('\n'));
+    expect(r?.pattern).toBe('java-oom');
+    expect(r?.evidence.map((e) => e.n)).toContain(150001);
+  });
+  it('reports the full frame count', () => {
+    const r = analyze('java.lang.NullPointerException\n\tat a.B.c(B.java:1)\n\tat a.B.d(B.java:2)\n');
+    expect(r?.frameCount).toBe(2);
+  });
 });
