@@ -20,7 +20,7 @@ h1{font-size:1.35rem;margin:.2rem 0 .5rem;overflow-wrap:anywhere}h2{font-size:1r
 .in{cursor:text;width:100%}.in.sm{width:90px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.bar .sp{flex:1}
 .ed{display:flex;height:44vh;min-height:250px;border:1px solid var(--bd);border-radius:6px;background:var(--pn);overflow:hidden}
-.ed.drop{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.ed.drop,.pn.drop{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
 .gut{padding:10px 8px 24px;text-align:right;color:var(--mu);overflow:hidden;user-select:none;white-space:pre;min-width:46px;font-size:var(--fs,16px);line-height:1.5;border-right:1px solid var(--bd)}
 textarea{flex:1;border:0;background:transparent;color:var(--tx);padding:10px;resize:none;white-space:pre;overflow:auto;outline:none;font-size:var(--fs,16px);line-height:1.5;min-width:0}
 #msg:empty{display:none}
@@ -51,3 +51,5 @@ main{padding-bottom:72px}
 
 /* Long unbroken tokens (class names, paths) must wrap instead of widening the page on phones. */
 p,li,dd,summary{overflow-wrap:anywhere}
+
+.lb.vb{position:relative}.vsp{position:relative;min-width:100%}.vwin{position:absolute;left:0;top:0;min-width:100%;width:max-content}.vb .row{height:20px;line-height:20px}.vb .tx{white-space:pre}

@@ -14,7 +14,7 @@ export interface Evidence { n: number; t: string }
 export interface AnalysisResult {
   version: 1; title: string; language: Language; platform: string; errorType: string; severity: 'error';
   summary: string; why: string; pattern: string; evidence: Evidence[]; fixes: Fix[]; avoid: string[]; doc?: string;
-  conf: Confidence; env: Env; frames: StackFrame[]; sus: Suspect | null; exc?: ExcLine; root?: ExcLine; lines: string[];
+  conf: Confidence; env: Env; frames: StackFrame[]; frameCount: number; sus: Suspect | null; exc?: ExcLine; root?: ExcLine; lines: string[];
 }
 export interface AnalysisInput { text: string }
 /** Every analysis backend (rule-based now, AI later) implements this; the UI never needs to know which one ran. */

@@ -23,7 +23,7 @@ CrashLens is an open-source developer tool that takes error messages, stack trac
 
 ## Features
 
-- Paste, upload (text files up to 25 MB) or drag and drop a log
+- Paste, upload (text files up to 25 MB) or drag and drop a log. The whole file is scanned in a background Web Worker, and a virtualized viewer keeps huge logs smooth
 - Stack trace parsing for Java, Python and JavaScript
 - Language and platform classification, including Minecraft detection
 - Minecraft details: Minecraft/loader/Java versions, OS, mod list (Fabric crash report format), suspected mod
@@ -62,6 +62,7 @@ npm test            # vitest
 index.html            page skeleton
 vite.config.js        Vite config
 src/ui/main.js        UI (plain JavaScript; renders results from the analyzer)
+src/ui/analysis.worker.js  runs the analyzer in a Web Worker
 src/ui/style.css      styles
 src/analyzer/         the engine as TypeScript modules (the only copy)
   stacktrace.ts       exception-line regex and Java/Python/JS frame parser
@@ -70,7 +71,7 @@ src/analyzer/         the engine as TypeScript modules (the only copy)
   patterns.ts         pattern database
   confidence.ts       evidence-weighted score
   analyze.ts          the pipeline
-  normalize.ts        large-log reduction
+  normalize.ts        line normalization and log reduction (reduction is reserved for the future AI feature)
   index.ts            public API and RuleBasedAnalyzer (AnalysisProvider)
 src/samples.ts        example inputs
 tests/                Vitest tests for the engine
@@ -98,7 +99,7 @@ A fixed-weight sum of evidence: exception found +25, specific pattern +25, known
 - [x] UI wired to the TypeScript modules (Vite)
 - [ ] Convert the UI script to TypeScript, add UI tests, ESLint and Prettier
 - [ ] More patterns (merge conflicts, ESM/CommonJS, compiler errors)
-- [ ] Web Worker parsing for very large logs
+- [x] Web Worker parsing and a virtualized viewer for very large logs
 - [ ] AI-assisted analysis (opt-in, off by default)
 - [ ] CLI, GitHub Action, VS Code extension
 
