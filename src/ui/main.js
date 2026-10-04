@@ -1,5 +1,6 @@
 import './style.css';
 import { SAMPLES, analyze, normalizeLog } from '../analyzer/index.ts';
+import { PROVIDER_LABELS, askAi, buildPayload, describeRedactions, validateConfig } from '../ai/index.ts';
 
 /* UI layer. All analysis comes from src/analyzer (tested TypeScript); this file only renders it. */
 const $=s=>document.querySelector(s);
@@ -9,7 +10,7 @@ const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');setTim
 const copy=t=>{try{navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>toast('Copy blocked by browser'))}catch{toast('Copy blocked by browser')}};
 
 /* ---------- Settings (persisted locally) ---------- */
-const S=Object.assign({theme:'system',hist:true,full:false,fs:16,wrap:false,ln:true},store.get('cl:settings',{}));
+const S=Object.assign({theme:'system',hist:true,full:false,fs:16,wrap:false,ln:true,aiOn:false,aiProvider:'anthropic',aiModel:'',aiBase:'',aiRemember:false},store.get('cl:settings',{}));
 const saveS=()=>{store.set('cl:settings',S);applyTheme()};
 function applyTheme(){const r=document.documentElement;S.theme==='system'?r.removeAttribute('data-theme'):r.dataset.theme=S.theme;r.style.setProperty('--fs',S.fs+'px')}
 
@@ -21,6 +22,42 @@ function save(r,t){if(!S.hist)return;const a=H();a.unshift({id:Date.now().toStri
 function nav(v){runId++;view=v;res=null;render()}
 function render(){const m=$('#main');m.replaceChildren();document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.v===view?'page':'false'));window.scrollTo(0,0);({analyze:vAnalyze,history:vHistory,formats:vFormats,settings:vSettings,about:vAbout})[view](m)}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.v)));
+
+/* ---------- Optional AI second opinion (bring your own key) ----------
+ Off by default. The key lives in memory unless "remember" is ticked. Only the redacted excerpt shown in the preview is sent,
+ straight from this browser to the chosen provider. AI output is shown as plain text only and never executed. */
+let aiKey=S.aiRemember?store.get('cl:aikey',''):'';
+const PRESETS=[['OpenAI','https://api.openai.com/v1'],['OpenRouter','https://openrouter.ai/api/v1'],['Groq','https://api.groq.com/openai/v1'],['Ollama (local)','http://localhost:11434/v1']];
+const aiCfg=()=>({provider:S.aiProvider,model:(S.aiModel||'').trim(),baseUrl:(S.aiBase||'').trim(),apiKey:aiKey});
+async function callAi(req){const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),60000);
+ try{return await askAi(aiCfg(),req,(u,i)=>fetch(u,{...i,signal:ctl.signal}))}
+ finally{clearTimeout(to)}}
+function aiSection(r){
+ if(!S.aiOn)return h('section',{class:'pn'},h('h2',{},'Second opinion (optional)'),h('p',{class:'mu'},'Turn on AI analysis in Settings to ask your own AI provider to double-check this result. It is off by default, and nothing is sent without a preview.'),h('button',{class:'btn',onclick:()=>nav('settings')},'Open Settings'));
+ const box=h('div',{}),el=sec('Second opinion (AI)',box),label=PROVIDER_LABELS[S.aiProvider];
+ const problem=validateConfig(aiCfg());
+ if(problem){box.append(h('p',{class:'mu'},problem),h('button',{class:'btn',onclick:()=>nav('settings')},'Open Settings'));return el}
+ const reset=()=>box.replaceChildren(h('p',{class:'mu'},'Sends a short, redacted summary to '+label+' for a second opinion. You review it first.'),h('button',{class:'btn',onclick:preview},'Ask '+label+' to double-check'));
+ const preview=()=>{const p=buildPayload(r);
+  box.replaceChildren(h('p',{},'Review before sending. Only this excerpt goes to '+label+'. Your full log stays in your browser.'),h('pre',{class:'sendpre'},p.user),h('p',{class:'mu'},describeRedactions(p.redactions)+' Check the text above for anything private that was not caught.'),h('details',{},h('summary',{},'Instructions sent with it'),h('pre',{class:'sendpre'},p.system)),h('div',{class:'bar'},h('button',{class:'btn pri',onclick:()=>send(p)},'Send to '+label),h('button',{class:'btn',onclick:reset},'Cancel')))};
+ const send=async p=>{box.replaceChildren(h('p',{role:'status'},'Waiting for '+label+'…'));
+  try{const t=await callAi({system:p.system,user:p.user});
+   box.replaceChildren(h('p',{class:'mu'},'⚠ AI-generated, may be wrong. Check it against the evidence above and review any command before you run it.'),h('div',{class:'aiout'},t),h('div',{class:'bar'},h('button',{class:'btn',onclick:()=>copy(t)},'Copy answer'),h('button',{class:'btn',onclick:preview},'Ask again')))}
+  catch(e){box.replaceChildren(h('p',{role:'alert'},'✕ '+String(e&&e.message||e)),h('div',{class:'bar'},h('button',{class:'btn',onclick:preview},'Back to preview'),h('button',{class:'btn',onclick:()=>nav('settings')},'Open Settings')))}};
+ reset();return el}
+function aiPanel(){const st=h('p',{class:'mu',role:'status'},'');
+ const inp=(k,props,onInput)=>h('input',{class:'in',...props,oninput:e=>onInput(e.target.value)});
+ const prov=h('select',{'aria-label':'AI provider',onchange:e=>{S.aiProvider=e.target.value;saveS();render()}},Object.keys(PROVIDER_LABELS).map(k=>h('option',{value:k,...(S.aiProvider===k?{selected:''}:{})},PROVIDER_LABELS[k])));
+ const model=h('input',{class:'in','aria-label':'Model name',placeholder:'Model name from your provider docs',value:S.aiModel||'',autocomplete:'off',autocapitalize:'off',spellcheck:'false',oninput:e=>{S.aiModel=e.target.value;saveS()}});
+ const base=S.aiProvider==='openai-compatible'?h('div',{},h('input',{class:'in','aria-label':'Base URL',placeholder:'https://api.openai.com/v1',value:S.aiBase||'',autocomplete:'off',autocapitalize:'off',spellcheck:'false',oninput:e=>{S.aiBase=e.target.value;saveS()}}),h('div',{class:'bar'},PRESETS.map(([n,u])=>h('button',{class:'btn',onclick:()=>{S.aiBase=u;saveS();render()}},n)))):null;
+ const key=h('input',{class:'in',type:'password','aria-label':'API key',placeholder:'API key',autocomplete:'off',autocapitalize:'off',spellcheck:'false',value:aiKey,oninput:e=>{aiKey=e.target.value;if(S.aiRemember)store.set('cl:aikey',aiKey)}});
+ const rem=h('label',{class:'chkl'},h('input',{type:'checkbox',...(S.aiRemember?{checked:''}:{}),onchange:e=>{S.aiRemember=e.target.checked;saveS();if(S.aiRemember)store.set('cl:aikey',aiKey);else{try{localStorage.removeItem('cl:aikey')}catch{}}}}),h('span',{},'Remember the key on this device',h('div',{class:'mu'},'Off by default: the key is kept in memory and disappears when you close the tab. If on, it is stored unencrypted in this browser, where extensions and anyone using this device could read it.')));
+ const test=h('button',{class:'btn',onclick:async()=>{const p=validateConfig(aiCfg());if(p){st.textContent='✕ '+p;return}st.textContent='Testing…';
+  try{const t=await callAi({system:'You are a connectivity test.',user:'Reply with the single word OK.'});st.textContent='✓ Connected. The provider replied: '+t.slice(0,80)}catch(e){st.textContent='✕ '+String(e&&e.message||e)}}},'Test connection');
+ const forget=h('button',{class:'btn',onclick:()=>{aiKey='';try{localStorage.removeItem('cl:aikey')}catch{}key.value='';st.textContent='Key forgotten.'}},'Forget key');
+ return h('div',{},h('p',{class:'mu'},'Pick a provider and use your own API key. When you press Send on a preview, that excerpt goes directly from this browser to the provider. CrashLens has no server and never sees your key or log. Usage is billed to your account with the provider.'),
+  h('label',{class:'fld'},'Provider',prov),h('label',{class:'fld'},'Model',model),base&&h('label',{class:'fld'},'Base URL',base),h('label',{class:'fld'},'API key',key),rem,
+  h('div',{class:'bar'},test,forget),st)}
 
 let worker;const pending=new Map();let seq=0;
 function getWorker(){if(worker!==undefined)return worker;
@@ -72,6 +109,7 @@ function vResult(m){const r=res;
  if(r.env.mc)m.append(sec('Minecraft',h('dl',{},...[['Minecraft',r.env.mcVer],['Loader',[r.env.loader,r.env.loaderVer].filter(Boolean).join(' ')],['Java',r.env.java],['OS',[r.env.os,r.env.arch].filter(Boolean).join(' ')],['Mixin errors',r.env.mixins||null],['Mods detected',r.env.mods.length||null],['Suspected mod',r.sus&&`${r.sus.id}${r.sus.version?' '+r.sus.version:''} (from ${r.sus.via})`]].filter(x=>x[1]).flatMap(([k,v])=>[h('dt',{},k),h('dd',{},String(v))])),r.sus&&h('p',{class:'mu'},'This is a suspicion, not proof: the mod appears in the failing code path, but another mod or version mismatch could be the real cause.'),r.env.mods.length>0&&h('details',{},h('summary',{},'Mods ('+r.env.mods.length+')'),h('div',{class:'mono mu'},r.env.mods.slice(0,60).map(x=>h('div',{},x.id+' '+x.version))))));
  const ev=sec('Evidence',h('p',{class:'mu'},'Lines from your log that support this conclusion.'),r.evidence.map(e=>h('div',{class:'ev1'},h('div',{class:'mu'},'Line '+e.n),h('pre',{},e.t),h('button',{class:'btn',onclick:()=>jump(e.n)},'Show in original log'))));m.append(ev);
  m.append(sec('Suggested fixes',...r.fixes.map(x=>h('div',{class:'fix'},h('strong',{},x.t),h('div',{},h('span',{class:'tag'},'Difficulty: '+x.d),h('span',{class:'tag'},'Risk: '+x.r)),h('p',{},x.w),x.c&&h('div',{class:'cmd'},h('code',{'aria-label':'Command, not executed'},x.c),h('button',{class:'btn',onclick:()=>copy(x.c)},'Copy')))),r.avoid.length>0&&h('div',{class:'fix'},h('strong',{},'What not to do'),h('ul',{},r.avoid.map(a=>h('li',{},a)))),h('p',{class:'mu'},'Commands are shown for you to review and copy. CrashLens never runs anything.')));
+ m.append(aiSection(r));
  m.append(sec('Environment',h('dl',{},...[['Language',r.language],['Platform',r.platform],['Error type',r.errorType],['Severity','Error'],['Java',!r.env.mc&&r.env.java],['Node.js tooling',r.env.node&&'yes']].filter(x=>x[1]).flatMap(([k,v])=>[h('dt',{},k),h('dd',{class:'mono'},String(v))]))));
  m.append(sec('Stack trace ('+(r.frameCount||r.frames.length)+' frames)',r.frames.length?r.frames.slice(0,40).map(f=>h('code',{class:'frame'},`${f.className?f.className+'.':''}${f.function||'(anonymous)'}  ${f.file||''}${f.line?':'+f.line:''}${f.column?':'+f.column:''}`)):h('p',{class:'mu'},'No stack frames were found in this input.')));
  const evs=new Set(r.evidence.map(e=>e.n));const v=(r.lines.length>3000?viewerBig:viewer)(r.lines,evs);m.append(sec('Original log',h('p',{class:'mu'},'All '+r.lines.length.toLocaleString()+' lines were scanned.'),v.el));window.__jump=v.jump}
@@ -121,7 +159,7 @@ function vHistory(m){const a=H();m.append(h('div',{class:'bar'},h('h1',{},'Histo
 function vSettings(m){const tg=(k,l,d)=>h('label',{class:'chkl'},h('input',{type:'checkbox',...(S[k]?{checked:''}:{}),onchange:e=>{S[k]=e.target.checked;saveS()}}),h('span',{},l,h('div',{class:'mu'},d)));
  m.append(h('h1',{},'Settings'),
  sec('Appearance',h('select',{'aria-label':'Theme',onchange:e=>{S.theme=e.target.value;saveS()}},['system','dark','light'].map(v=>h('option',{value:v,...(S.theme===v?{selected:''}:{})},v[0].toUpperCase()+v.slice(1))))),
- sec('Analysis',h('p',{},'Rule-based (local, deterministic). This is the only analysis mode implemented.'),h('label',{class:'chkl'},h('input',{type:'checkbox',disabled:'',...{}}),h('span',{},'External AI analysis: OFF',h('div',{class:'mu'},'Not implemented yet. When added, it will stay off by default and will tell you exactly what would be sent before anything leaves your device.')))),
+ sec('Analysis',h('p',{},'The rule-based analysis always runs first, locally.'),h('label',{class:'chkl'},h('input',{type:'checkbox',...(S.aiOn?{checked:''}:{}),onchange:e=>{S.aiOn=e.target.checked;saveS();render()}}),h('span',{},'AI second opinion (external)',h('div',{class:'mu'},S.aiOn?'ON: an Ask AI button appears on results. Nothing is sent until you review a preview and press Send.':'OFF (default). Nothing is ever sent anywhere.'))),S.aiOn&&aiPanel()),
  sec('Privacy',tg('hist','Store history','Save a summary of each analysis in this browser.'),tg('full','Store full logs with history','Saves up to 200 KB of each log in this browser so you can reopen analyses. Logs may contain private paths or usernames.')),
  sec('Editor',tg('ln','Line numbers',''),tg('wrap','Wrap lines in the log viewer',''),h('label',{},'Font size: ',h('input',{type:'range',min:13,max:20,value:S.fs,'aria-label':'Font size',onchange:e=>{S.fs=+e.target.value;saveS()}}))))}
 
@@ -133,7 +171,7 @@ const FM=[['Java','Exception, RuntimeException, NullPointerException, ClassNotFo
 ['Minecraft','Crash reports and logs for Fabric, Forge, NeoForge, Quilt, Paper, Spigot, Bukkit: LWJGL failures, Mixin failures, missing dependencies, Java version mismatch, Forge/NeoForge mod loading errors, OpenGL/GLFW failures, Paper/Spigot plugin load failures.','Extracts Minecraft/loader/Java versions, OS, mod list (Fabric crash report format), suspected mod from mixin config names and stack packages.','Mod list extraction is tuned to the Fabric crash report layout. A suspected mod is a hint, not proof.'],
 ['Generic logs','Any text containing an exception-style line or stack frames.','The whole log (up to 25 MB) is scanned in a background worker and shown in a virtualized viewer.','Logs with no recognizable error show a "no recognizable error" message.']];
 function vFormats(m){m.append(h('h1',{},'Supported formats'),h('p',{class:'mu'},'What CrashLens understands today. Anything not listed here is not claimed.'));FM.forEach(([n,e,p,l])=>m.append(h('details',{class:'pn'},h('summary',{},h('strong',{},n)),h('p',{},h('b',{},'Errors: '),e),h('p',{},h('b',{},'Parsing: '),p),h('p',{class:'mu'},h('b',{},'Limits: '),l))))}
-function vAbout(m){m.append(h('h1',{},'About CrashLens'),sec('Turn scary errors into understandable answers.',h('p',{},'CrashLens is an open-source developer tool designed to make technical errors easier to understand. It analyzes logs locally using deterministic parsers and pattern matching, with optional AI analysis planned for future versions.')),sec('Privacy',h('p',{},'Your logs are processed locally in your browser. This version has no external AI provider and sends nothing anywhere. Uploaded files are read as text only and never executed. Log content is rendered as plain text, never as HTML.')),sec('Not built yet',h('p',{},'AI analysis, a CLI, a GitHub Action, and importing or exporting analysis files are not built yet.')))}
+function vAbout(m){m.append(h('h1',{},'About CrashLens'),sec('Turn scary errors into understandable answers.',h('p',{},'CrashLens is an open-source developer tool designed to make technical errors easier to understand. It analyzes logs locally using deterministic parsers and pattern matching, with optional AI analysis planned for future versions.')),sec('Privacy',h('p',{},'Your logs are processed locally in your browser. Nothing is sent anywhere unless you turn on AI second opinion in Settings and press Send on a preview. Then only the excerpt you reviewed goes directly from your browser to the provider you chose. Uploaded files are read as text only and never executed. Log content is rendered as plain text, never as HTML.')),sec('Not built yet',h('p',{},'A CLI, a GitHub Action, and importing or exporting analysis files are not built yet.')))}
 /* Preview banner: shown everywhere except the production site, so this file is safe to merge into main. */
 if(location.hostname!=='crashlens.pages.dev')$('#beta').hidden=false;
 applyTheme();render();

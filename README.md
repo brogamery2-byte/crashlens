@@ -71,8 +71,12 @@ src/analyzer/         the engine as TypeScript modules (the only copy)
   patterns.ts         pattern database
   confidence.ts       evidence-weighted score
   analyze.ts          the pipeline
-  normalize.ts        line normalization and log reduction (reduction is reserved for the future AI feature)
+  normalize.ts        line normalization and log reduction
   index.ts            public API and RuleBasedAnalyzer (AnalysisProvider)
+src/ai/                optional bring-your-own-key AI second opinion
+  redact.ts           masks emails, user folders, IPs, key-shaped strings
+  prompt.ts           builds the excerpt that would be sent (never the full log)
+  providers.ts        Anthropic, Google Gemini and OpenAI-compatible adapters
 src/samples.ts        example inputs
 tests/                Vitest tests for the engine
 ```
@@ -81,7 +85,16 @@ The UI and tests share the same engine code. The UI layer itself has no automate
 
 ## Privacy
 
-Logs are processed locally. Nothing is uploaded. Uploaded files are read as text and never executed, and log content is rendered as plain text. Commands in suggested fixes are only displayed for you to copy. There is no external AI provider in this version.
+Logs are processed locally. Nothing is uploaded. Uploaded files are read as text and never executed, and log content is rendered as plain text. Commands in suggested fixes are only displayed for you to copy.
+
+**Optional AI second opinion (off by default).** In Settings you can turn on an "Ask AI" button and connect your own key for Anthropic, Google Gemini, or any OpenAI-compatible endpoint (OpenAI, OpenRouter, Groq, local Ollama). Nothing is sent until you press Send on a preview that shows the exact text:
+
+- Only a short summary, a few evidence lines and the top stack frames are included. The full log is never sent.
+- Emails, user folder names, IP addresses and key-shaped strings are masked first. This is best effort, which is why you review the preview.
+- Requests go directly from your browser to the provider. CrashLens has no server and never sees your key.
+- The key stays in memory and disappears when you close the tab, unless you tick "Remember the key on this device" (stored unencrypted in the browser).
+- The answer is shown as plain text, labeled as AI-generated, and nothing in it is ever executed.
+- Some providers may block direct browser requests (CORS). Use "Test connection" in Settings to check.
 
 ## Confidence
 
@@ -100,7 +113,7 @@ A fixed-weight sum of evidence: exception found +25, specific pattern +25, known
 - [ ] Convert the UI script to TypeScript, add UI tests, ESLint and Prettier
 - [ ] More patterns (merge conflicts, ESM/CommonJS, compiler errors)
 - [x] Web Worker parsing and a virtualized viewer for very large logs
-- [ ] AI-assisted analysis (opt-in, off by default)
+- [x] Optional AI second opinion with your own API key (off by default)
 - [ ] CLI, GitHub Action, VS Code extension
 
 ## Contributing
