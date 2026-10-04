@@ -8,6 +8,10 @@ CrashLens is an open-source developer tool that takes error messages, stack trac
 
 <!-- Screenshots: add images to /docs and link them here -->
 
+## Try it
+
+**[crashlens.pages.dev](https://crashlens.pages.dev)**: paste an error or log, or pick one of the built-in examples. Everything runs in your browser; nothing is uploaded.
+
 ## Features
 
 - Paste, upload (text files up to 25 MB) or drag and drop a log
