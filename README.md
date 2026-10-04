@@ -2,6 +2,9 @@
 
 **Turn scary errors into understandable answers.**
 
+[![CI](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml/badge.svg)](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml)
+
+
 CrashLens is an open-source developer tool that takes error messages, stack traces and crash logs and explains what happened, why, and what to try. Analysis is deterministic (parsers and pattern matching) and runs entirely in your browser.
 
 > Status: early version. The UI is a single static page (`index.html`); the analysis engine also exists as tested TypeScript modules in `src/`.
