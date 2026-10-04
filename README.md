@@ -3,7 +3,11 @@
 **Turn scary errors into understandable answers.**
 
 [![CI](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml/badge.svg)](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml)
-
+[![License: MIT](https://img.shields.io/github/license/brogamery2-byte/crashlens)](LICENSE)
+[![Last commit](https://img.shields.io/github/last-commit/brogamery2-byte/crashlens)](https://github.com/brogamery2-byte/crashlens/commits/main)
+[![Live demo](https://img.shields.io/badge/demo-crashlens.pages.dev-blue)](https://crashlens.pages.dev)
+[![Runs locally](https://img.shields.io/badge/privacy-runs%20locally-brightgreen)](#privacy)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#contributing)
 
 CrashLens is an open-source developer tool that takes error messages, stack traces and crash logs and explains what happened, why, and what to try. Analysis is deterministic (parsers and pattern matching) and runs entirely in your browser.
 
@@ -92,3 +96,4 @@ Issues and pull requests are welcome. New patterns are the easiest contribution:
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
