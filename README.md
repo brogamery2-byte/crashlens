@@ -2,9 +2,6 @@
 
 **Turn scary errors into understandable answers.**
 
-[![CI](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml/badge.svg)](https://github.com/brogamery2-byte/crashlens/actions/workflows/ci.yml)
-
-
 CrashLens is an open-source developer tool that takes error messages, stack traces and crash logs and explains what happened, why, and what to try. Analysis is deterministic (parsers and pattern matching) and runs entirely in your browser.
 
 > Status: early version. The UI is a single static page (`index.html`); the analysis engine also exists as tested TypeScript modules in `src/`.
@@ -21,14 +18,14 @@ CrashLens is an open-source developer tool that takes error messages, stack trac
 - Stack trace parsing for Java, Python and JavaScript
 - Language and platform classification, including Minecraft detection
 - Minecraft details: Minecraft/loader/Java versions, OS, mod list (Fabric crash report format), suspected mod
-- 19 built-in error patterns with causes, fixes (difficulty, risk, copy-only commands) and official docs links where known
+- 44 built-in error patterns with causes, fixes (difficulty, risk, copy-only commands) and official docs links where known
 - Transparent confidence score with the evidence behind it
 - Evidence view with "Show in original log", plus a searchable log viewer
 - Local history (summaries by default; full logs only if you opt in), settings, light/dark theme
 
 ## Supported errors
 
-Java (NoClassDefFoundError, ClassNotFoundException, NullPointerException, OutOfMemoryError, StackOverflowError, UnsupportedClassVersionError), Python (ModuleNotFoundError, KeyError, TypeError), JavaScript (TypeError, ReferenceError), Node.js module resolution, Git (push rejected, authentication), C/C++ (undefined reference, segfault), Minecraft (LWJGL, Mixin, dependency, Java version). Other exceptions get a generic explanation. See the in-app "Supported formats" page for limits.
+Java (NoClassDefFoundError, ClassNotFoundException, NullPointerException, OutOfMemoryError, StackOverflowError, UnsupportedClassVersionError, IllegalArgument/IllegalState/UnsupportedOperation/ClassCast/ArrayIndexOutOfBounds), Python (ModuleNotFoundError, ImportError, KeyError, IndexError, AttributeError, FileNotFoundError, ValueError, TypeError), JavaScript/Node.js (TypeError, ReferenceError, SyntaxError, invalid JSON, call stack overflow, unhandled rejections, module resolution, ESM/CommonJS conflicts, npm ERESOLVE and EACCES), TypeScript compiler errors, Git (push rejected, authentication, merge conflicts, detached HEAD), C/C++ (undefined reference, missing headers, undeclared identifiers, segfault), Minecraft (LWJGL, Mixin, dependencies, Java version, Forge/NeoForge loading, OpenGL/GLFW, Paper/Spigot plugins). Other exceptions get a generic explanation. See the in-app "Supported formats" page for limits.
 
 ## Run it
 

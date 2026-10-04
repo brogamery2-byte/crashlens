@@ -88,3 +88,144 @@ describe('samples and large logs', () => {
     expect(r?.errorType).toBe('NullPointerException');
   });
 });
+
+const CASES: [string, string, string][] = [
+ [
+  "git merge conflict",
+  "Auto-merging app.js\nCONFLICT (content): Merge conflict in app.js\nAutomatic merge failed; fix conflicts and then commit the result.\n",
+  "git-conflict"
+ ],
+ [
+  "git detached HEAD",
+  "Note: switching to 'abc123'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental changes.\n",
+  "git-detached"
+ ],
+ [
+  "node ERR_REQUIRE_ESM",
+  "Error [ERR_REQUIRE_ESM]: require() of ES Module /app/node_modules/chalk/source/index.js from /app/index.js not supported.\n",
+  "node-esm"
+ ],
+ [
+  "node import outside module",
+  "SyntaxError: Cannot use import statement outside a module\n    at wrapSafe (node:internal/modules/cjs/loader:1281:20)\n",
+  "node-esm"
+ ],
+ [
+  "npm ERESOLVE",
+  "npm ERR! code ERESOLVE\nnpm ERR! ERESOLVE unable to resolve dependency tree\nnpm ERR! Found: react@19.0.0\n",
+  "npm-eresolve"
+ ],
+ [
+  "npm EACCES",
+  "npm ERR! code EACCES\nnpm ERR! syscall mkdir\nnpm ERR! path /usr/lib/node_modules\nnpm ERR! errno -13\n",
+  "node-eacces"
+ ],
+ [
+  "TypeScript TS2304",
+  "src/app.ts(12,5): error TS2304: Cannot find name 'foo'.\n",
+  "ts-error"
+ ],
+ [
+  "C missing header",
+  "main.c:1:10: fatal error: foo.h: No such file or directory\n    1 | #include <foo.h>\ncompilation terminated.\n",
+  "c-header"
+ ],
+ [
+  "C undeclared",
+  "main.c: In function 'main':\nmain.c:5:3: error: 'x' undeclared (first use in this function)\n",
+  "c-compile"
+ ],
+ [
+  "Forge mod loading",
+  "net.minecraftforge.fml.ModLoadingException: Mod examplemod requires forge 52.0.0 or above\n\tat net.minecraftforge.fml.ModLoader.gatherAndInitializeMods(ModLoader.java:100)\nMinecraft 1.21.1\n",
+  "mc-forge"
+ ],
+ [
+  "OpenGL / GLFW",
+  "[Render thread/ERROR]: GLFW error 65542: WGL: The driver does not appear to support OpenGL\nMinecraft 1.21.1\n",
+  "mc-opengl"
+ ],
+ [
+  "Paper plugin",
+  "[Server thread/ERROR]: Could not load 'plugins/Foo.jar' in folder 'plugins'\norg.bukkit.plugin.UnknownDependencyException: Bar\n\tat org.bukkit.plugin.SimplePluginManager.loadPlugin(SimplePluginManager.java:300)\n",
+  "mc-plugin"
+ ],
+ [
+  "Python AttributeError",
+  "Traceback (most recent call last):\n  File \"a.py\", line 2, in <module>\n    x.foo()\nAttributeError: 'NoneType' object has no attribute 'foo'\n",
+  "py-attr"
+ ],
+ [
+  "Python ImportError",
+  "Traceback (most recent call last):\n  File \"a.py\", line 1, in <module>\nImportError: cannot import name 'Foo' from 'bar' (/x/bar.py)\n",
+  "py-import"
+ ],
+ [
+  "Python FileNotFoundError",
+  "Traceback (most recent call last):\n  File \"a.py\", line 4, in <module>\nFileNotFoundError: [Errno 2] No such file or directory: 'config.yml'\n",
+  "py-fnf"
+ ],
+ [
+  "Python IndexError",
+  "Traceback (most recent call last):\n  File \"a.py\", line 4, in <module>\nIndexError: list index out of range\n",
+  "py-index"
+ ],
+ [
+  "Python ValueError",
+  "Traceback (most recent call last):\n  File \"a.py\", line 4, in <module>\nValueError: invalid literal for int() with base 10: 'abc'\n",
+  "py-value"
+ ],
+ [
+  "JSON parse",
+  "SyntaxError: Unexpected token < in JSON at position 0\n    at JSON.parse (<anonymous>)\n",
+  "js-json"
+ ],
+ [
+  "call stack",
+  "RangeError: Maximum call stack size exceeded\n    at f (/app/a.js:2:3)\n",
+  "js-stack"
+ ],
+ [
+  "promise rejection",
+  "[UnhandledPromiseRejection: This error originated either by throwing inside of an async function without a catch block]\n",
+  "js-promise"
+ ],
+ [
+  "JS SyntaxError",
+  "SyntaxError: Unexpected identifier 'foo'\n    at wrapSafe (node:internal/modules/cjs/loader:1281:20)\n",
+  "js-syntax"
+ ],
+ [
+  "Java IllegalArgument",
+  "Exception in thread \"main\" java.lang.IllegalArgumentException: bad\n\tat com.a.B.c(B.java:1)\n",
+  "java-iae"
+ ],
+ [
+  "Java IllegalState",
+  "java.lang.IllegalStateException: closed\n\tat com.a.B.c(B.java:1)\n",
+  "java-ise"
+ ],
+ [
+  "Java UnsupportedOperation",
+  "java.lang.UnsupportedOperationException\n\tat java.base/java.util.ImmutableCollections.uoe(ImmutableCollections.java:142)\n",
+  "java-uoe"
+ ],
+ [
+  "Java ArrayIndexOutOfBounds",
+  "java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3\n\tat com.a.B.c(B.java:1)\n",
+  "java-aioobe"
+ ],
+ [
+  "Java ClassCast",
+  "java.lang.ClassCastException: class A cannot be cast to class B\n\tat com.a.B.c(B.java:1)\n",
+  "java-cce"
+ ]
+];
+
+describe('pattern coverage', () => {
+  for (const [name, text, id] of CASES) {
+    it(name, () => {
+      expect(analyze(text)?.pattern).toBe(id);
+    });
+  }
+});
