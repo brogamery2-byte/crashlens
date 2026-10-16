@@ -53,3 +53,6 @@ main{padding-bottom:72px}
 p,li,dd,summary{overflow-wrap:anywhere}
 
 .lb.vb{position:relative}.vsp{position:relative;min-width:100%}.vwin{position:absolute;left:0;top:0;min-width:100%;width:max-content}.vb .row{height:20px;line-height:20px}.vb .tx{white-space:pre}
+.sendpre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:40vh;overflow:auto;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;font-size:.85rem;margin:8px 0}
+.aiout{white-space:pre-wrap;overflow-wrap:anywhere;border-left:3px solid var(--blu);background:var(--bg);padding:8px 12px;margin:8px 0}
+.fld{display:block;margin:8px 0;color:var(--mu);font-size:.9rem}.fld .in,.fld select{display:block;margin-top:4px;width:100%}
