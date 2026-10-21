@@ -10,6 +10,7 @@
 [![Live preview](https://img.shields.io/badge/preview-beta.crashlens.pages.dev-orange)](https://beta.crashlens.pages.dev)
 [![Runs locally](https://img.shields.io/badge/privacy-runs%20locally-brightgreen)](#privacy)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#contributing)
+[![Project On Hold](https://img.shields.io/badge/Project-On%20Hold-yellow)](#contributing)
 
 CrashLens is an open-source developer tool that takes error messages, stack traces and crash logs and explains what happened, why, and what to try. Analysis is deterministic (parsers and pattern matching) and runs entirely in your browser.
 
